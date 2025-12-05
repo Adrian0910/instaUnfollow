@@ -1,314 +1,819 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Followers Analyzer</title>
-    <style>
-        :root {
-            --color-primary: #32a8c6;
-            --color-surface: #fafaf9;
-            --color-text: #133c3b;
-            --color-border: #5e5240;
-            --color-error: #c01530;
-            --color-success: #218081;
-            --radius-base: 8px;
-            --space-16: 16px;
-            --space-8: 8px;
-        }
+  <meta charset="UTF-8">
+  <title>Comparar followers vs following</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    :root {
+      /* Paleta Material-like light */
+      --color-bg: #f3f4f6;
+      --color-surface: #ffffff;
+      --color-surface-alt: #f9fafb;
+      --color-border: #e5e7eb;
+      --color-text: #111827;
+      --color-text-muted: #6b7280;
+      --color-primary: #2563eb;
+      --color-primary-dark: #1d4ed8;
+      --color-primary-soft: #dbeafe;
+      --color-accent: #22c55e;
+      --color-warning-bg: #fffbeb;
+      --color-warning-border: #fbbf24;
+      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
 
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--color-surface);
-            color: var(--color-text);
-        }
+      --radius-lg: 1rem;
+      --radius-md: 0.75rem;
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+      --font-size-body: clamp(15px, 1.2vw, 17px);
+    }
 
-        h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
-            color: var(--color-text);
-        }
+    .theme-dark {
+      --color-bg: #020617;
+      --color-surface: #020617;
+      --color-surface-alt: #020617;
+      --color-border: #1e293b;
+      --color-text: #e5e7eb;
+      --color-text-muted: #9ca3af;
+      --color-primary: #60a5fa;
+      --color-primary-dark: #3b82f6;
+      --color-primary-soft: rgba(37, 99, 235, 0.18);
+      --color-accent: #22c55e;
+      --color-warning-bg: rgba(251, 191, 36, 0.12);
+      --color-warning-border: #facc15;
+      --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.7);
+    }
 
-        .subtitle {
-            color: #626c71;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        .upload-section {
-            background: white;
-            padding: 24px;
-            border-radius: var(--radius-base);
-            border: 1px solid rgba(94, 82, 64, 0.2);
-            margin-bottom: 24px;
-        }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, var(--color-primary-soft), var(--color-bg) 55%);
+      color: var(--color-text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 1.3rem;
+      font-size: var(--font-size-body);
+      transition: background-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+    }
 
-        .file-input-group {
-            margin-bottom: 16px;
-        }
+    a {
+      color: inherit;
+    }
 
-        .file-input-group:last-child {
-            margin-bottom: 0;
-        }
+    .app-shell {
+      width: 100%;
+      max-width: 1120px;
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--color-border);
+      transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 14px;
-        }
+    header {
+      padding: 1rem 1.2rem 0.9rem;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: linear-gradient(
+        135deg,
+        var(--color-primary-soft),
+        rgba(255, 255, 255, 0)
+      );
+    }
 
-        input[type="file"] {
-            display: block;
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid rgba(94, 82, 64, 0.2);
-            border-radius: var(--radius-base);
-            font-size: 14px;
-            cursor: pointer;
-        }
+    .header-main {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
 
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-        }
+    header h1 {
+      font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+      font-weight: 650;
+      color: var(--color-text);
+    }
 
-        button {
-            flex: 1;
-            min-width: 150px;
-            padding: 10px 16px;
-            border: none;
-            border-radius: var(--radius-base);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
+    header p {
+      font-size: clamp(0.9rem, 1.1vw, 1rem);
+      color: var(--color-text-muted);
+      max-width: 34rem;
+      line-height: 1.4;
+    }
 
-        .btn-primary {
-            background: var(--color-primary);
-            color: #fafaf9;
-        }
+    /* Toggle tema */
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
 
-        .btn-primary:hover:not(:disabled) {
-            background: #2a96ae;
-        }
+    .theme-toggle-label {
+      display: none;
+    }
 
-        .btn-secondary {
-            background: rgba(94, 82, 64, 0.12);
-            color: var(--color-text);
-        }
+    .toggle-switch {
+      position: relative;
+      width: 46px;
+      height: 24px;
+    }
 
-        .btn-secondary:hover:not(:disabled) {
-            background: rgba(94, 82, 64, 0.2);
-        }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--color-border);
+      transition: 0.2s;
+      border-radius: 999px;
+    }
 
-        .results-section {
-            background: white;
-            padding: 24px;
-            border-radius: var(--radius-base);
-            border: 1px solid rgba(94, 82, 64, 0.2);
-            display: none;
-        }
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      top: 3px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.3);
+      transition: 0.2s;
+    }
 
-        .results-section.active {
-            display: block;
-        }
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--color-primary);
+    }
 
-        .stat-box {
-            background: rgba(50, 168, 198, 0.08);
-            padding: 16px;
-            border-radius: var(--radius-base);
-            margin-bottom: 24px;
-            border-left: 4px solid var(--color-primary);
-        }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
 
-        .stat-number {
-            font-size: 32px;
-            font-weight: 600;
-            color: var(--color-primary);
-            margin-bottom: 4px;
-        }
+    .theme-toggle span.icon {
+      font-size: 1rem;
+    }
 
-        .stat-label {
-            font-size: 14px;
-            color: #626c71;
-        }
+    main {
+      padding: 1.1rem 1.1rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: var(--color-surface-alt);
+      transition: background-color 0.25s ease;
+    }
 
-        .list-section {
-            margin-top: 24px;
-        }
+    /* Instrucciones */
+    .instructions {
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 0.9rem 0.95rem 0.75rem;
+    }
 
-        .list-section h3 {
-            font-size: 16px;
-            margin-bottom: 12px;
-            color: var(--color-text);
-        }
+    .instructions h2 {
+      font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+      margin-bottom: 0.45rem;
+      color: var(--color-text);
+    }
 
-        .users-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid rgba(94, 82, 64, 0.2);
-            border-radius: var(--radius-base);
-            max-height: 400px;
-            overflow-y: auto;
-        }
+    .instructions ol {
+      margin-left: 1.3rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
 
-        .users-table thead {
-            background: rgba(50, 168, 198, 0.08);
-            position: sticky;
-            top: 0;
-        }
+    .instructions li {
+      line-height: 1.4;
+      color: var(--color-text-muted);
+    }
 
-        .users-table th {
-            padding: 12px 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(94, 82, 64, 0.2);
-            color: var(--color-text);
-        }
+    .instructions a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
 
-        .user-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(94, 82, 64, 0.1);
-            font-size: 14px;
-            word-break: break-word;
-        }
+    .instructions a:hover {
+      text-decoration: underline;
+    }
 
-        .user-item:last-child {
-            border-bottom: none;
-        }
+    .instructions p {
+      margin-top: 0.35rem;
+      line-height: 1.4;
+      color: var(--color-text-muted);
+    }
 
-        .user-item:hover {
-            background: rgba(94, 82, 64, 0.05);
-        }
+    .disclaimer {
+      margin-top: 0.6rem;
+      padding: 0.65rem 0.7rem;
+      border-radius: 0.7rem;
+      border: 1px solid var(--color-warning-border);
+      background-color: var(--color-warning-bg);
+      font-size: clamp(0.8rem, 1vw, 0.9rem);
+      line-height: 1.35;
+      color: var(--color-text);
+    }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
+    .disclaimer strong {
+      color: var(--color-warning-border);
+    }
 
-        .status-not-following {
-            background: rgba(192, 21, 47, 0.15);
-            color: var(--color-error);
-        }
+    /* Card genérica */
+    .card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      padding: 0.9rem;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+      transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
 
-        .status-not-found {
-            background: rgba(230, 129, 97, 0.15);
-            color: #d97706;
-        }
+    .card h2 {
+      font-size: clamp(1.02rem, 1.4vw, 1.2rem);
+      margin-bottom: 0.4rem;
+      color: var(--color-text);
+    }
 
-        .error {
-            background: rgba(192, 21, 47, 0.08);
-            color: var(--color-error);
-            padding: 12px 16px;
-            border-radius: var(--radius-base);
-            border-left: 4px solid var(--color-error);
-            margin-bottom: 16px;
-            font-size: 14px;
-        }
+    .card p {
+      font-size: clamp(0.9rem, 1.1vw, 0.98rem);
+      color: var(--color-text-muted);
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
 
-        .success {
-            background: rgba(33, 128, 141, 0.08);
-            color: var(--color-success);
-            padding: 12px 16px;
-            border-radius: var(--radius-base);
-            border-left: 4px solid var(--color-success);
-            margin-bottom: 16px;
-            font-size: 14px;
-        }
+    /* Inputs y botones */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
 
-        .hidden {
-            display: none;
-        }
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
 
-        @media (max-width: 600px) {
-            .button-group {
-                flex-direction: column;
-            }
+    label {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
 
-            button {
-                width: 100%;
-            }
+    input[type="file"] {
+      font-size: 0.9rem;
+      color: var(--color-text);
+    }
 
-            h1 {
-                font-size: 24px;
-            }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
 
-            .stat-number {
-                font-size: 24px;
-            }
-        }
-    </style>
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      transition: background-color 0.16s ease, transform 0.08s ease, box-shadow 0.16s ease;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+    }
+
+    button.secondary {
+      background: #f3f4f6;
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+
+    .theme-dark button.secondary {
+      background: #020617;
+      color: var(--color-text-muted);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.2);
+    }
+
+    /* Resultados */
+    .resultado-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .resultado-row-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.35rem;
+    }
+
+    .resultado-row-title h2 {
+      margin: 0;
+    }
+
+    .resultado-count {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      border-radius: 0.6rem;
+      border: 1px solid var(--color-border);
+      padding: 0.6rem 0.65rem;
+      background-color: #f9fafb;
+      color: var(--color-text);
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      line-height: 1.35;
+    }
+
+    .theme-dark textarea {
+      background-color: #020617;
+    }
+
+    .solo-following-list {
+      width: 100%;
+      height: 180px;
+      border-radius: 0.6rem;
+      border: 1px solid var(--color-border);
+      padding: 0.5rem 0.6rem;
+      background-color: #f9fafb;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .theme-dark .solo-following-list {
+      background-color: #020617;
+    }
+
+    .solo-following-list div {
+      margin-bottom: 0.25rem;
+    }
+
+    .solo-following-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .solo-following-list a:hover {
+      text-decoration: underline;
+    }
+
+    .overrides textarea {
+      width: 100%;
+      border-radius: 0.6rem;
+      border: 1px solid var(--color-border);
+      padding: 0.6rem 0.65rem;
+      background-color: #f9fafb;
+      color: var(--color-text);
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+    }
+
+    .theme-dark .overrides textarea {
+      background-color: #020617;
+    }
+
+    .overrides p {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    /* Layout responsive */
+    @media (min-width: 768px) {
+      body {
+        padding: 1.75rem;
+      }
+
+      header {
+        padding: 1rem 1.6rem 0.9rem;
+      }
+
+      main {
+        padding: 1.1rem 1.6rem 1.6rem;
+        gap: 1.2rem;
+      }
+
+      .resultado-grid {
+        flex-direction: row;
+      }
+
+      .resultado-grid .card {
+        flex: 1 1 0;
+      }
+
+      .theme-toggle-label {
+        display: inline;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Instagram Followers Analyzer</h1>
-        <p class="subtitle">Descubre quién no te sigue de vuelta</p>
+  <div class="app-shell">
+    <header>
+      <div class="header-main">
+        <h1>Analizador de followers vs following</h1>
+        <p>
+          Carga tus archivos <strong>followers_1.json</strong> y <strong>following.json</strong> para ver
+          quién te sigue de vuelta y revisar fácilmente los perfiles que probablemente no te siguen.
+        </p>
+      </div>
+      <div class="theme-toggle">
+        <span class="icon" aria-hidden="true">☀️</span>
+        <span class="theme-toggle-label">Tema</span>
+        <label class="toggle-switch" aria-label="Cambiar entre modo claro y oscuro">
+          <input type="checkbox" id="themeToggle">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="icon" aria-hidden="true">🌙</span>
+      </div>
+    </header>
 
-        <div class="upload-section">
-            <div class="file-input-group">
-                <label for="followers-file">Archivo followers_1.json</label>
-                <input type="file" id="followers-file" accept=".json">
-            </div>
-
-            <div class="file-input-group">
-                <label for="following-file">Archivo following.json</label>
-                <input type="file" id="following-file" accept=".json">
-            </div>
-
-            <div class="button-group">
-                <button class="btn-primary" id="analyze-btn">Analizar</button>
-                <button class="btn-secondary" id="download-btn" disabled>Descargar JSON</button>
-                <button class="btn-secondary" id="reset-btn">Limpiar</button>
-            </div>
+    <main>
+      <!-- INSTRUCCIONES -->
+      <section class="instructions">
+        <h2>Cómo obtener followers_1.json y following.json</h2>
+        <ol>
+          <li>Abre Instagram (app o web) e inicia sesión en la cuenta que quieres analizar.</li>
+          <li>Ve a <strong>Configuración</strong> de tu cuenta.</li>
+          <li>
+            Entra al <strong>Centro de cuentas</strong> (Accounts Center).
+            También puedes abrirlo desde el navegador en:
+            <a href="https://accountscenter.instagram.com/" target="_blank" rel="noopener noreferrer">
+              https://accountscenter.instagram.com/
+            </a>.
+          </li>
+          <li>
+            Dentro del Centro de cuentas, entra a <strong>Tu información y permisos</strong>
+            (Your information and permissions).[web:52]
+          </li>
+          <li>Selecciona la opción <strong>Descargar tu información</strong> o <strong>Exportar tu información</strong>.</li>
+          <li>Elige <strong>Personalizar información</strong> (no descargar todo).</li>
+          <li>Desmarca todas las categorías y deja seleccionada únicamente <strong>Conexiones</strong> (Connections), luego pulsa en <strong>Guardar</strong>.</li>
+          <li>En el formato de archivo, selecciona <strong>JSON</strong>.</li>
+          <li>
+            Confirma con <strong>Exportar</strong> o <strong>Solicitar descarga</strong>.
+            Instagram generará un archivo y te enviará un enlace por correo cuando esté listo.[web:6]
+          </li>
+          <li>Cuando recibas el correo, descarga el archivo ZIP, descomprímelo y busca la carpeta donde estén tus conexiones (followers/following).</li>
+          <li>Dentro de esa carpeta localiza y guarda los archivos <strong>followers_1.json</strong> y <strong>following.json</strong>, que son los que vas a cargar en esta página.</li>
+        </ol>
+        <p>
+          Nota: Los nombres de menús pueden variar ligeramente según el idioma o la versión de la app,
+          pero siempre se gestionan desde el <strong>Centro de cuentas</strong> y la sección de
+          <strong>Tu información y permisos</strong> para exportar datos.[web:52]
+        </p>
+        <div class="disclaimer">
+          <strong>Importante sobre la precisión de los datos:</strong><br>
+          Instagram puede generar exportaciones JSON incompletas o desactualizadas, por lo que esta herramienta
+          solo puede trabajar con la información que contengan tus archivos descargados.[web:6][web:3]
+          La lista <strong>“Solo Following (tú los sigues, ellos no)”</strong> es una ayuda inicial:
+          revisa manualmente, perfil por perfil, si cada usuario realmente no sigue tu cuenta
+          antes de tomar decisiones (por ejemplo, dejar de seguirlo).
         </div>
+      </section>
 
-        <div id="error-container"></div>
-
-        <div class="results-section" id="results">
-            <div class="stat-box">
-                <div class="stat-number" id="total-count">0</div>
-                <div class="stat-label">Personas que no te siguen de vuelta</div>
-            </div>
-
-            <div class="list-section">
-                <h3>Lista de usuarios que no te siguen</h3>
-                <table class="users-table" id="users-table">
-                    <thead>
-                        <tr>
-                            <th>Usuario (Following)</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-list"></tbody>
-                </table>
-            </div>
+      <!-- CARGA DE ARCHIVOS Y BOTONES -->
+      <section class="card">
+        <h2>1. Cargar archivos y comparar</h2>
+        <p>
+          Carga los JSON exportados y ejecuta la comparación inicial. Luego podrás
+          corregir inconsistencias añadiendo overrides manuales.
+        </p>
+        <div class="field-group">
+          <div class="field-row">
+            <label for="followersFile">Archivo followers_1.json (followers):</label>
+            <input type="file" id="followersFile" accept=".json">
+          </div>
+          <div class="field-row">
+            <label for="followingFile">Archivo following.json (following):</label>
+            <input type="file" id="followingFile" accept=".json">
+          </div>
         </div>
-    </div>
+        <div class="button-row">
+          <button id="compareBtn" class="primary">Comparar (solo JSON)</button>
+        </div>
+      </section>
 
-    <script src="main.js"></script>
+      <!-- RESULTADOS -->
+      <section class="resultado-grid">
+        <article class="card">
+          <div class="resultado-row-title">
+            <h2>Mutuos</h2>
+            <span id="countMutuos" class="resultado-count"></span>
+          </div>
+          <textarea id="mutuos" readonly></textarea>
+        </article>
+
+        <article class="card">
+          <div class="resultado-row-title">
+            <h2>Solo Followers</h2>
+            <span id="countSoloFollowers" class="resultado-count"></span>
+          </div>
+          <textarea id="soloFollowers" readonly></textarea>
+        </article>
+
+        <article class="card">
+          <div class="resultado-row-title">
+            <h2>Solo Following</h2>
+            <span id="countSoloFollowing" class="resultado-count"></span>
+          </div>
+          <div id="soloFollowing" class="solo-following-list"></div>
+        </article>
+      </section>
+
+      <!-- OVERRIDES Y DESCARGA -->
+      <section class="card overrides">
+        <h2>2. Correcciones manuales (overrides)</h2>
+        <p>
+          Añade aquí los usernames que <strong>sabes</strong> que sí te siguen aunque no aparezcan en
+          <strong>followers_1.json</strong> (uno por línea). Se considerarán como followers adicionales
+          al recalcular.
+        </p>
+        <textarea id="manualOverrides"
+          placeholder="ejemplo:
+jobas_bello
+otro_usuario"></textarea>
+        <div class="button-row">
+          <button id="applyOverridesBtn" class="secondary">Recalcular con overrides</button>
+          <button id="downloadSoloFollowingFinalBtn" class="secondary">
+            Descargar Solo Following (final)
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const INSTAGRAM_BASE_URL = 'https://www.instagram.com/_u/';
+
+    let lastUsernamesFollowers = [];
+    let lastUsernamesFollowing = [];
+    let lastFinalResult = null;
+
+    function readJsonFile(inputElement) {
+      return new Promise((resolve, reject) => {
+        const file = inputElement.files[0];
+        if (!file) {
+          reject(new Error('No se seleccionó archivo'));
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            resolve(data);
+          } catch (e) {
+            reject(new Error('Error al parsear JSON: ' + e.message));
+          }
+        };
+        reader.onerror = () => reject(new Error('Error al leer archivo'));
+        reader.readAsText(file, 'utf-8');
+      });
+    }
+
+    function getFollowerUsernames(followersArray) {
+      if (!Array.isArray(followersArray)) return [];
+      return followersArray
+        .map(item => item && item.string_list_data && item.string_list_data[0] && item.string_list_data[0].value)
+        .filter(Boolean);
+    }
+
+    function getFollowingUsernames(followingData) {
+      if (!followingData || !Array.isArray(followingData.relationships_following)) {
+        return [];
+      }
+      return followingData.relationships_following
+        .map(item => item && item.title)
+        .filter(Boolean);
+    }
+
+    function separateByCategory(usernamesFollowers, usernamesFollowing) {
+      const setFollowers = new Set(usernamesFollowers);
+      const setFollowing = new Set(usernamesFollowing);
+
+      const mutuos = [];
+      const soloFollowers = [];
+      const soloFollowing = [];
+
+      usernamesFollowers.forEach(username => {
+        if (setFollowing.has(username)) {
+          mutuos.push(username);
+        } else {
+          soloFollowers.push(username);
+        }
+      });
+
+      usernamesFollowing.forEach(username => {
+        if (!setFollowers.has(username)) {
+          soloFollowing.push(username);
+        }
+      });
+
+      return { mutuos, soloFollowers, soloFollowing };
+    }
+
+    function usernamesToUrls(usernames) {
+      return usernames.map(u => INSTAGRAM_BASE_URL + encodeURIComponent(u));
+    }
+
+    function updateCounts(result) {
+      const { mutuos, soloFollowers, soloFollowing } = result;
+      document.getElementById('countMutuos').textContent =
+        mutuos.length ? `${mutuos.length} usuarios` : '';
+      document.getElementById('countSoloFollowers').textContent =
+        soloFollowers.length ? `${soloFollowers.length} usuarios` : '';
+      document.getElementById('countSoloFollowing').textContent =
+        soloFollowing.length ? `${soloFollowing.length} usuarios` : '';
+    }
+
+    function renderResult(result, isFinal) {
+      const { mutuos, soloFollowers, soloFollowing } = result;
+
+      document.getElementById('mutuos').value = mutuos.join('\n');
+      document.getElementById('soloFollowers').value = soloFollowers.join('\n');
+
+      const container = document.getElementById('soloFollowing');
+      const urls = usernamesToUrls(soloFollowing);
+      container.innerHTML = urls.map((url, idx) => {
+        const username = soloFollowing[idx];
+        return `
+          <div>
+            <a href="${url}" target="_blank" rel="noopener noreferrer">
+              ${username}
+            </a>
+          </div>
+        `;
+      }).join('');
+
+      updateCounts(result);
+
+      const prefix = isFinal ? 'Resultado FINAL (con overrides)' : 'Resultado inicial (solo JSON)';
+      console.log(
+        `${prefix} | Mutuos: ${mutuos.length}, Solo Followers: ${soloFollowers.length}, Solo Following: ${soloFollowing.length}`
+      );
+    }
+
+    function parseManualOverrides(text) {
+      return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+    }
+
+    function recomputeWithOverrides(usernamesFollowers, usernamesFollowing, manualFollowers) {
+      const mergedFollowersSet = new Set([
+        ...usernamesFollowers,
+        ...manualFollowers
+      ]);
+      const mergedFollowers = Array.from(mergedFollowersSet);
+      return separateByCategory(mergedFollowers, usernamesFollowing);
+    }
+
+    function downloadTextFile(filename, text) {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Comparar inicial
+    document.getElementById('compareBtn').addEventListener('click', async () => {
+      const followersInput = document.getElementById('followersFile');
+      const followingInput = document.getElementById('followingFile');
+
+      if (!followersInput.files[0] || !followingInput.files[0]) {
+        alert('Selecciona ambos archivos JSON antes de comparar.');
+        return;
+      }
+
+      try {
+        const [followersData, followingData] = await Promise.all([
+          readJsonFile(followersInput),
+          readJsonFile(followingInput)
+        ]);
+
+        const usernamesFollowers = getFollowerUsernames(followersData);
+        const usernamesFollowing = getFollowingUsernames(followingData);
+
+        lastUsernamesFollowers = usernamesFollowers;
+        lastUsernamesFollowing = usernamesFollowing;
+
+        const baseResult = separateByCategory(usernamesFollowers, usernamesFollowing);
+        lastFinalResult = baseResult;
+
+        renderResult(baseResult, false);
+      } catch (err) {
+        alert('Ocurrió un error: ' + err.message);
+      }
+    });
+
+    // Overrides
+    document.getElementById('applyOverridesBtn').addEventListener('click', () => {
+      if (!lastUsernamesFollowers.length && !lastUsernamesFollowing.length) {
+        alert('Primero ejecuta la comparación inicial con los archivos JSON (botón “Comparar”).');
+        return;
+      }
+
+      const manualText = document.getElementById('manualOverrides').value;
+      const manualFollowers = parseManualOverrides(manualText);
+
+      if (!manualFollowers.length) {
+        alert('No hay usernames en la lista de overrides.');
+        return;
+      }
+
+      const finalResult = recomputeWithOverrides(
+        lastUsernamesFollowers,
+        lastUsernamesFollowing,
+        manualFollowers
+      );
+
+      lastFinalResult = finalResult;
+      renderResult(finalResult, true);
+    });
+
+    // Descargar lista final de Solo Following
+    document.getElementById('downloadSoloFollowingFinalBtn').addEventListener('click', () => {
+      if (!lastFinalResult || !lastFinalResult.soloFollowing.length) {
+        alert('Aún no hay resultado final o la lista Solo Following está vacía.');
+        return;
+      }
+      const urls = usernamesToUrls(lastFinalResult.soloFollowing);
+      const contenido = urls.join('\n');
+      downloadTextFile('solo_following_final_overrides_urls.txt', contenido);
+    });
+
+    // Toggle tema claro / oscuro
+    const themeToggle = document.getElementById('themeToggle');
+
+    // Inicial: respetar preferencia del sistema si existe
+    const prefersDark = window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      document.body.classList.add('theme-dark');
+      themeToggle.checked = true;
+    }
+
+    themeToggle.addEventListener('change', () => {
+      document.body.classList.toggle('theme-dark', themeToggle.checked);
+    });
+  </script>
 </body>
 </html>
