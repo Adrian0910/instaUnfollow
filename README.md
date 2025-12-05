@@ -1,4 +1,4 @@
-# instaUnfollow
+# InstaUnfollow
 ## Instagram Followers vs Following Analyzer
 
 A simple, client‑side web tool to compare your Instagram **followers** and **following** lists using the official JSON export from Instagram.  
